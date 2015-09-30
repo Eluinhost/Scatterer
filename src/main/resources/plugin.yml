@@ -1,0 +1,12 @@
+name: ${project.name}
+main: ${project.groupId}.${project.artifactId}.Entry
+version: ${project.version}
+author: ghowden/Eluinhost
+commands:
+  sct:
+    description: Use scatter command
+    permission: uhc.sct.command
+permissions:
+  uhc.sct.command:
+    description: usage of /sct command
+    default: op

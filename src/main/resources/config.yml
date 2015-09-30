@@ -1,0 +1,24 @@
+default scatter style: SQUARE
+max attempts per player: 250
+allowed blocks:
+- DIRT
+- LEAVES
+- LEAVES_2
+- SAND
+- STONE
+- GRAVEL
+- SNOW
+- SNOW_BLOCK
+- ICE
+- GRASS
+- LOG
+- LOG_2
+- DOUBLE_PLANT
+- DEAD_BUSH
+- CROPS
+- LONG_GRASS
+- SANDSTONE
+- VINE
+- WATER_LILY
+- WHEAT
+- STAINED_CLAY
