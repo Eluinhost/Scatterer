@@ -41,3 +41,38 @@ Example: `/sct -at -w UHC -r 1200 -c 0:0`
 `t OR teams` - scatter players as teams (non-teamed players are teleported solo)
 
 `a OR allowAllBlocks` - Skips the allowed blocks, players can be scattered on to any kind of block
+
+# Configuration
+
+```yaml
+default scatter style: SQUARE
+max attempts per player: 250
+allowed blocks:
+- DIRT
+- LEAVES
+- LEAVES_2
+- SAND
+- STONE
+- GRAVEL
+- SNOW
+- SNOW_BLOCK
+- ICE
+- GRASS
+- LOG
+- LOG_2
+- DOUBLE_PLANT
+- DEAD_BUSH
+- CROPS
+- LONG_GRASS
+- SANDSTONE
+- VINE
+- WATER_LILY
+- WHEAT
+- STAINED_CLAY
+```
+
+`default scatter style` - SQUARE or CIRCULAR
+
+`max attempts per player` - at least 1, attempts to get a location per player
+
+`allowed blocks` - list of Bukkit Material names of blocks allowed to be spawned on
