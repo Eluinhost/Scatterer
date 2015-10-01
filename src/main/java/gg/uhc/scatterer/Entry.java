@@ -1,6 +1,8 @@
 package gg.uhc.scatterer;
 
 import com.google.common.collect.Sets;
+import gg.uhc.scatterer.teleportation.ChunkPreparer;
+import gg.uhc.scatterer.teleportation.Teleporter;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -20,10 +22,14 @@ public class Entry extends JavaPlugin {
 
         try {
             Set<Material> materials = getAllowedMaterials(configuration);
-            int max = configuration.getInt("max attempts per player");
             ScatterStyle style = getScatterStyle(configuration);
+            int max = configuration.getInt("default max attempts per player");
+            int perTeleport = configuration.getInt("default teleports per set");
+            int ticksPer = configuration.getInt("default ticks between sets");
+            double minRadius = configuration.getDouble("default minimum radius");
 
-            ScatterCommand command = new ScatterCommand(new ChunkPreparer(), style, materials, max);
+            Teleporter teleporter = new Teleporter(new ChunkPreparer(), this);
+            ScatterCommand command = new ScatterCommand(teleporter, style, materials, max, perTeleport, ticksPer, minRadius);
             getCommand("sct").setExecutor(command);
         } catch (InvalidConfigurationException e) {
             e.printStackTrace();

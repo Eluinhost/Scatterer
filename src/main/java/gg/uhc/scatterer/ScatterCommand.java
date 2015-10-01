@@ -1,6 +1,5 @@
 package gg.uhc.scatterer;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -13,6 +12,7 @@ import com.publicuhc.scatterlib.zones.CircularDeadZoneBuilder;
 import com.publicuhc.scatterlib.zones.DeadZone;
 import gg.uhc.scatterer.conversion.*;
 import gg.uhc.scatterer.conversion.selection.SelectionPredicate;
+import gg.uhc.scatterer.teleportation.Teleporter;
 import joptsimple.*;
 import org.bukkit.*;
 import org.bukkit.command.Command;
@@ -29,9 +29,12 @@ public class ScatterCommand implements CommandExecutor {
 
     protected static final String STARTING_SCATTER = ChatColor.GOLD + "Starting scatter of %d players/teams";
     protected static final String HELP_HEADER = "" + ChatColor.BOLD + ChatColor.GOLD + "Scatter Parameters. Bold = required.";
+    protected static final String ALREADY_SCATTERING = ChatColor.RED + "There is already a scatter in progress, please wait";
+    protected static final String UPDATE_MESSAGE = ChatColor.AQUA + "Scatter in progress: %d of %d players/teams complete";
+    protected static final String SCATTERED = ChatColor.GOLD + "Scatter complete";
 
     protected final Set<Material> materials;
-    protected final ChunkPreparer chunkPreparer;
+    protected final Teleporter teleporter;
 
     protected final OptionParser parser;
     protected final OptionSpec<Void> helpSpec;
@@ -47,9 +50,11 @@ public class ScatterCommand implements CommandExecutor {
     protected final OptionSpec<Player> playersSpec;
     protected final OptionSpec<Void> anyMaterialSpec;
     protected final OptionSpec<Void> silentSpec;
+    protected final OptionSpec<Integer> perTeleportSpec;
+    protected final OptionSpec<Integer> ticksPerTeleport;
 
-    public ScatterCommand(ChunkPreparer chunkPreparer, ScatterStyle defaultLogic, Set<Material> materials, int defaultMaxAttempts) {
-        this.chunkPreparer = chunkPreparer;
+    public ScatterCommand(Teleporter teleporter, ScatterStyle defaultLogic, Set<Material> materials, int defaultMaxAttempts, int perTeleport, int ticksPer, double minRadius) {
+        this.teleporter = teleporter;
         this.materials = materials;
 
         parser = new OptionParser();
@@ -74,10 +79,10 @@ public class ScatterCommand implements CommandExecutor {
                 .withValuesConvertedBy(new DoubleConverter(SelectionPredicate.ANY_DOUBLE));
 
         minRadiusSpec = parser
-                .acceptsAll(ImmutableSet.of("m", "min", "minradius"), "Minimum radius between players/teams after scatter, default 0")
+                .acceptsAll(ImmutableSet.of("m", "min", "minradius"), "Minimum radius between players/teams after scatter, default: " + minRadius)
                 .withRequiredArg()
                 .withValuesConvertedBy(new DoubleConverter(SelectionPredicate.POSITIVE_DOUBLE_INC_ZERO))
-                .defaultsTo(0D);
+                .defaultsTo(minRadius);
 
         radiusSpec = parser
                 .acceptsAll(ImmutableSet.of("r", "radius"), "Radius around the centre to scatter")
@@ -116,6 +121,18 @@ public class ScatterCommand implements CommandExecutor {
 
         silentSpec = parser
                 .acceptsAll(ImmutableSet.of("silent"), "Doesn't broadcast scatter to entire server");
+
+        perTeleportSpec = parser
+                .acceptsAll(ImmutableSet.of("p", "per", "perTeleport"), "How many players/teams to teleport per teleport set, default: " + perTeleport)
+                .withRequiredArg()
+                .withValuesConvertedBy(new IntegerConverter(SelectionPredicate.POSITIVE_INTEGER))
+                .defaultsTo(perTeleport);
+
+        ticksPerTeleport = parser
+                .acceptsAll(ImmutableSet.of("ticks", "ticksPer"), "Amount of ticks between sets of teleports, default: " + ticksPer)
+                .withRequiredArg()
+                .withValuesConvertedBy(new IntegerConverter(SelectionPredicate.POSITIVE_INTEGER))
+                .defaultsTo(ticksPer);
     }
 
     public void onHelp(CommandSender sender) {
@@ -156,7 +173,12 @@ public class ScatterCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
+    public boolean onCommand(final CommandSender sender, final Command command, String s, String[] args) {
+        if (teleporter.isTeleporting()) {
+            sender.sendMessage(ALREADY_SCATTERING);
+            return true;
+        }
+
         try {
             OptionSet options = parser.parse(args);
 
@@ -237,13 +259,34 @@ public class ScatterCommand implements CommandExecutor {
 
                     List<Location> locations = scatterer.getScatterLocations(scatter.size());
 
-                    if (!options.has(silentSpec)) {
+                    final boolean silent = options.has(silentSpec);
+
+                    if (!silent) {
                         Bukkit.broadcastMessage(String.format(STARTING_SCATTER, scatter.size()));
                     } else {
                         sender.sendMessage(String.format(STARTING_SCATTER, scatter.size()));
                     }
 
-                    startTeleporting(locations, Lists.newArrayList(scatter));
+                    teleporter.teleport(locations, Lists.newArrayList(scatter), perTeleportSpec.value(options), ticksPerTeleport.value(options), new Teleporter.Callback() {
+                        @Override
+                        public void onUpdate(int completed, int total) {
+                            if (silent) {
+                                sender.sendMessage(String.format(UPDATE_MESSAGE, completed, total));
+                            } else {
+                                Bukkit.broadcastMessage(String.format(UPDATE_MESSAGE, completed, total));
+                            }
+                        }
+
+                        @Override
+                        public void onComplete() {
+                            if (silent) {
+                                sender.sendMessage(SCATTERED);
+                            } else {
+                                Bukkit.broadcastMessage(SCATTERED);
+                            }
+                        }
+                    });
+
                     return true;
                 } catch (ScatterLocationException e) {
                     sender.sendMessage(ChatColor.RED + "Failed to find locations for all players, attempt #" + (i + 1));
@@ -264,18 +307,5 @@ public class ScatterCommand implements CommandExecutor {
             sender.sendMessage(ChatColor.RED + message + ". Type /sct -? for help");
             return true;
         }
-    }
-
-    protected void startTeleporting(List<Location> locations, List<Scatterable> scatterables) {
-        Preconditions.checkArgument(locations.size() == scatterables.size());
-
-        chunkPreparer.stopChunkUnload(true);
-        chunkPreparer.prepareLocations(locations);
-
-        for (int i = 0; i < locations.size(); i++) {
-            scatterables.get(i).teleport(locations.get(i).add(0, 2, 0));
-        }
-
-        chunkPreparer.stopChunkUnload(false);
     }
 }

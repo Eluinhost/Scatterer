@@ -1,5 +1,8 @@
 default scatter style: SQUARE
-max attempts per player: 250
+default max attempts per player: 250
+default teleports per set: 5
+default ticks between sets: 20
+default minimum radius: 0
 allowed blocks:
 - DIRT
 - LEAVES

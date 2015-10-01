@@ -1,4 +1,4 @@
-package gg.uhc.scatterer;
+package gg.uhc.scatterer.teleportation;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;

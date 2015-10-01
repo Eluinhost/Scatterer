@@ -30,7 +30,11 @@ Example: `/sct -at -w UHC -r 1200 -c 0:0`
 
 `c OR centre` - coordinates of the centre of the scatter `x:z`, defaults to the world spawn
 
-`m OR min OR minradius` - minimum radius to leave between players during a scatter, default 0
+`m OR min OR minradius` - minimum radius to leave between players during a scatter, default is set in the config file
+
+`ticks OR ticksPer` - amount of ticks between sets of scatters, default is set in the config file
+
+`p OR per OR perTeleport` - how many teams/players to teleport per set, default is set in the config file
 
 ### Flags
 
@@ -46,7 +50,10 @@ Example: `/sct -at -w UHC -r 1200 -c 0:0`
 
 ```yaml
 default scatter style: SQUARE
-max attempts per player: 250
+default max attempts per player: 250
+default teleports per set: 5
+default ticks between sets: 20
+default minimum radius: 0
 allowed blocks:
 - DIRT
 - LEAVES
@@ -73,6 +80,12 @@ allowed blocks:
 
 `default scatter style` - SQUARE or CIRCULAR
 
-`max attempts per player` - at least 1, attempts to get a location per player
+`default max attempts per player` - at least 1, attempts to get a location per player
+
+`default teleports per set` - at least 1, how many players/teams to teleport per scatter set
+
+`default ticks between sets` - at least 1, how many ticks between scatter sets
+
+`default minimum radius` - at least 0, how much distance to leave between players
 
 `allowed blocks` - list of Bukkit Material names of blocks allowed to be spawned on
