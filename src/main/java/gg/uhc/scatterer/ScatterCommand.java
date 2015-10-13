@@ -18,6 +18,7 @@ import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
@@ -32,6 +33,7 @@ public class ScatterCommand implements CommandExecutor {
     protected static final String ALREADY_SCATTERING = ChatColor.RED + "There is already a scatter in progress, please wait";
     protected static final String UPDATE_MESSAGE = ChatColor.AQUA + "Scatter in progress: %d of %d players/teams complete";
     protected static final String SCATTERED = ChatColor.GOLD + "Scatter complete";
+    protected static final String MUST_PROVIDE_WORLD = ChatColor.RED + "You must provide a world (-w) as you are not in a world";
 
     protected final Set<Material> materials;
     protected final Teleporter teleporter;
@@ -67,9 +69,8 @@ public class ScatterCommand implements CommandExecutor {
                 .acceptsAll(ImmutableSet.of("t", "teams"), "Scatter as teams");
 
         worldSpawnSpec = parser
-                .acceptsAll(ImmutableSet.of("w", "world"), "World to scatter into")
+                .acceptsAll(ImmutableSet.of("w", "world"), "World to scatter into, defaults to the world you are in when sending")
                 .withRequiredArg()
-                .required()
                 .withValuesConvertedBy(new WorldConverter());
 
         centreSpec = parser
@@ -189,7 +190,18 @@ public class ScatterCommand implements CommandExecutor {
 
             StandardScatterLogic logic = logicSpec.value(options).provide();
 
-            World world = worldSpawnSpec.value(options);
+            World world;
+            if (options.has(worldSpawnSpec)) {
+                world = worldSpawnSpec.value(options);
+            } else {
+                if (!(sender instanceof Entity)) {
+                    sender.sendMessage(MUST_PROVIDE_WORLD);
+                    return true;
+                }
+
+                world = ((Entity) sender).getWorld();
+            }
+
             Location centre;
 
             // use world spawn if centre coords are not provided
