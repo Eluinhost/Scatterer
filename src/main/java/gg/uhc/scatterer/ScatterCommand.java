@@ -42,7 +42,6 @@ public class ScatterCommand extends OptionCommand {
     protected final Set<Material> materials;
     protected final Teleporter teleporter;
 
-    protected final OptionSpec<Void> helpSpec;
     protected final OptionSpec<Void> useTeamsSpec;
     protected final OptionSpec<World> worldSpawnSpec;
     protected final OptionSpec<Double> centreSpec;
@@ -61,10 +60,6 @@ public class ScatterCommand extends OptionCommand {
     public ScatterCommand(Teleporter teleporter, ScatterStyle defaultLogic, Set<Material> materials, int defaultMaxAttempts, int perTeleport, int ticksPer, double minRadius) {
         this.teleporter = teleporter;
         this.materials = materials;
-
-        helpSpec = parser
-                .acceptsAll(ImmutableList.of("?", "h", "help", "wtf"), "Help")
-                .forHelp();
 
         useTeamsSpec = parser
                 .acceptsAll(ImmutableSet.of("t", "teams"), "Scatter as teams");
