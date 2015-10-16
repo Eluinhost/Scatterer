@@ -77,6 +77,10 @@
                     <minimizeJar>true</minimizeJar>
                     <relocations>
                         <relocation>
+                            <pattern>gg.uhc.flagcommands</pattern>
+                            <shadedPattern>${project.groupId}.${project.artifactId}.flagcommands</shadedPattern>
+                        </relocation>
+                        <relocation>
                             <pattern>com.publicuhc.scatter</pattern>
                             <shadedPattern>${project.groupId}.${project.artifactId}.bukkitscatter</shadedPattern>
                         </relocation>
