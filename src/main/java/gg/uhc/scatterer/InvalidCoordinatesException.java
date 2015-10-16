@@ -1,6 +1,6 @@
-package gg.uhc.scatterer.conversion;
+package gg.uhc.scatterer;
 
-import joptsimple.OptionException;
+import gg.uhc.flagcommands.joptsimple.OptionException;
 
 import java.util.Collection;
 

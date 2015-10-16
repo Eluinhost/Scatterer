@@ -1,9 +1,9 @@
 package gg.uhc.scatterer.conversion;
 
 import com.google.common.base.Joiner;
+import gg.uhc.flagcommands.joptsimple.ValueConversionException;
+import gg.uhc.flagcommands.joptsimple.ValueConverter;
 import gg.uhc.scatterer.ScatterStyle;
-import joptsimple.ValueConversionException;
-import joptsimple.ValueConverter;
 
 public class ScatterStyleConverter implements ValueConverter<ScatterStyle> {
 
