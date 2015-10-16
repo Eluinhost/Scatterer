@@ -62,10 +62,10 @@ public class ScatterCommand extends OptionCommand {
         this.materials = materials;
 
         useTeamsSpec = parser
-                .acceptsAll(ImmutableSet.of("t", "teams"), "Scatter as teams");
+                .acceptsAll(ImmutableSet.of("t", "teams"), "Scatter players as teams, players not in a team will be scattered solo");
 
         worldSpawnSpec = parser
-                .acceptsAll(ImmutableSet.of("w", "world"), "World to scatter into, defaults to the world you are in when sending")
+                .acceptsAll(ImmutableSet.of("w", "world"), "World to scatter into. If not provideed uses the world you are in")
                 .withRequiredArg()
                 .withValuesConvertedBy(new WorldConverter());
 
@@ -73,60 +73,60 @@ public class ScatterCommand extends OptionCommand {
                 .acceptsAll(ImmutableSet.of("c", "centre"), "Coords of the centre of the scatter. If not provided uses world spawn location")
                 .withRequiredArg()
                 .withValuesSeparatedBy(':')
-                .withValuesConvertedBy(new DoubleConverter().setType("coordinate"));
+                .withValuesConvertedBy(new DoubleConverter().setType("x:z"));
 
         minRadiusSpec = parser
-                .acceptsAll(ImmutableSet.of("m", "min", "minradius"), "Minimum radius between players/teams after scatter, default: " + minRadius)
+                .acceptsAll(ImmutableSet.of("m", "min", "minradius"), "Minimum radius between players/teams after scatter")
                 .withRequiredArg()
                 .withValuesConvertedBy(new DoubleConverter().setPredicate(DoublePredicates.GREATER_THAN_ZERO_INC).setType("Number >= 0"))
                 .defaultsTo(minRadius);
 
         radiusSpec = parser
-                .acceptsAll(ImmutableSet.of("r", "radius"), "Radius around the centre to scatter")
+                .acceptsAll(ImmutableSet.of("r", "radius"), "Radius around the centre coordinate to scatter")
                 .withRequiredArg()
                 .required()
                 .withValuesConvertedBy(new DoubleConverter().setPredicate(DoublePredicates.GREATER_THAN_ZERO_INC).setType("Number >= 0"));
 
         maxAttemptsSpec = parser
-                .acceptsAll(ImmutableSet.of("max", "maxAttempts"), "Maximum attempts to find a location per player, default: " + defaultMaxAttempts)
+                .acceptsAll(ImmutableSet.of("max", "maxAttempts"), "Maximum attempts to find a location per player")
                 .withRequiredArg()
                 .withValuesConvertedBy(new IntegerConverter().setPredicate(IntegerPredicates.GREATER_THAN_ZERO).setType("Integer > 0"))
                 .defaultsTo(defaultMaxAttempts);
 
         logicSpec = parser
-                .acceptsAll(ImmutableSet.of("s", "style"), "Style of scatter to use, default: " + defaultLogic.name())
+                .acceptsAll(ImmutableSet.of("s", "style"), "Style of scatter to use")
                 .withRequiredArg()
                 .withValuesConvertedBy(new ScatterStyleConverter())
                 .defaultsTo(defaultLogic);
 
         avoidSpawnSpec = parser
-                .acceptsAll(ImmutableSet.of("spawn", "avoidSpawn"), "Avoid a radius around spawn")
+                .acceptsAll(ImmutableSet.of("spawn", "avoidSpawn"), "Don't scatter to within this radius around spawn")
                 .withRequiredArg()
                 .withValuesConvertedBy(new DoubleConverter().setPredicate(DoublePredicates.GREATER_THAN_ZERO).setType("Number > 0"));
 
         reattemptsSpec = parser
-                .acceptsAll(ImmutableSet.of("reattempts"), "How many times to rerun before giving up, default 1")
+                .acceptsAll(ImmutableSet.of("reattempts"), "How many times to rerun the command before giving up")
                 .withRequiredArg()
                 .withValuesConvertedBy(new IntegerConverter().setPredicate(IntegerPredicates.GREATER_THAN_ZERO).setType("Integer > 0"))
                 .defaultsTo(1);
 
         anyMaterialSpec = parser
-                .acceptsAll(ImmutableSet.of("a", "allowAllBlocks"), "Allows all blocks to be spawned on, ignores config");
+                .acceptsAll(ImmutableSet.of("a", "allowAllBlocks"), "Allows any blocks to be scattered onto, ignores config settings");
 
-        playersSpec = parser.nonOptions("Player/s to scatter, empty = scatter all online")
+        playersSpec = parser.nonOptions("Player/s to scatter, if not provided will scatter all online players")
                 .withValuesConvertedBy(new OnlinePlayerConverter());
 
         silentSpec = parser
                 .acceptsAll(ImmutableSet.of("silent"), "Doesn't broadcast scatter to entire server");
 
         perTeleportSpec = parser
-                .acceptsAll(ImmutableSet.of("p", "per", "perTeleport"), "How many players/teams to teleport per teleport set, default: " + perTeleport)
+                .acceptsAll(ImmutableSet.of("p", "per", "perTeleport"), "How many players/teams to teleport per teleport set")
                 .withRequiredArg()
                 .withValuesConvertedBy(new IntegerConverter().setPredicate(IntegerPredicates.GREATER_THAN_ZERO).setType("Integer > 0"))
                 .defaultsTo(perTeleport);
 
         ticksPerTeleport = parser
-                .acceptsAll(ImmutableSet.of("ticks", "ticksPer"), "Amount of ticks between sets of teleports, default: " + ticksPer)
+                .acceptsAll(ImmutableSet.of("ticks", "ticksPer"), "Amount of ticks between sets of teleports")
                 .withRequiredArg()
                 .withValuesConvertedBy(new IntegerConverter().setPredicate(IntegerPredicates.GREATER_THAN_ZERO).setType("Integer > 0"))
                 .defaultsTo(ticksPer);
