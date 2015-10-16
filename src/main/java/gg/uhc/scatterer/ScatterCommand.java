@@ -34,7 +34,6 @@ import java.util.Set;
 public class ScatterCommand extends OptionCommand {
 
     protected static final String STARTING_SCATTER = ChatColor.GOLD + "Starting scatter of %d players/teams";
-    protected static final String HELP_HEADER = "" + ChatColor.BOLD + ChatColor.GOLD + "Scatter Parameters. Bold = required.";
     protected static final String ALREADY_SCATTERING = ChatColor.RED + "There is already a scatter in progress, please wait";
     protected static final String UPDATE_MESSAGE = ChatColor.AQUA + "Scatter in progress: %d of %d players/teams complete";
     protected static final String SCATTERED = ChatColor.GOLD + "Scatter complete";
