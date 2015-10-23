@@ -6,7 +6,7 @@
 
     <groupId>gg.uhc</groupId>
     <artifactId>scatterer</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <name>Scatterer</name>
 
     <repositories>
@@ -27,7 +27,7 @@
         <dependency>
             <groupId>gg.uhc</groupId>
             <artifactId>flagcommands</artifactId>
-            <version>1.0.0</version>
+            <version>1.1.1</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>

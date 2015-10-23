@@ -15,10 +15,12 @@ import gg.uhc.flagcommands.converters.DoubleConverter;
 import gg.uhc.flagcommands.converters.IntegerConverter;
 import gg.uhc.flagcommands.converters.OnlinePlayerConverter;
 import gg.uhc.flagcommands.converters.WorldConverter;
+import gg.uhc.flagcommands.joptsimple.ArgumentAcceptingOptionSpec;
 import gg.uhc.flagcommands.joptsimple.OptionSet;
 import gg.uhc.flagcommands.joptsimple.OptionSpec;
 import gg.uhc.flagcommands.predicates.DoublePredicates;
 import gg.uhc.flagcommands.predicates.IntegerPredicates;
+import gg.uhc.flagcommands.tab.*;
 import gg.uhc.scatterer.conversion.ScatterStyleConverter;
 import gg.uhc.scatterer.teleportation.Teleporter;
 import org.bukkit.*;
@@ -43,19 +45,19 @@ public class ScatterCommand extends OptionCommand {
     protected final Teleporter teleporter;
 
     protected final OptionSpec<Void> useTeamsSpec;
-    protected final OptionSpec<World> worldSpawnSpec;
-    protected final OptionSpec<Double> centreSpec;
-    protected final OptionSpec<Double> minRadiusSpec;
-    protected final OptionSpec<Double> radiusSpec;
-    protected final OptionSpec<Integer> maxAttemptsSpec;
-    protected final OptionSpec<Double> avoidSpawnSpec;
-    protected final OptionSpec<ScatterStyle> logicSpec;
-    protected final OptionSpec<Integer> reattemptsSpec;
+    protected final ArgumentAcceptingOptionSpec<World> worldSpawnSpec;
+    protected final ArgumentAcceptingOptionSpec<Double> centreSpec;
+    protected final ArgumentAcceptingOptionSpec<Double> minRadiusSpec;
+    protected final ArgumentAcceptingOptionSpec<Double> radiusSpec;
+    protected final ArgumentAcceptingOptionSpec<Integer> maxAttemptsSpec;
+    protected final ArgumentAcceptingOptionSpec<Double> avoidSpawnSpec;
+    protected final ArgumentAcceptingOptionSpec<ScatterStyle> logicSpec;
+    protected final ArgumentAcceptingOptionSpec<Integer> reattemptsSpec;
     protected final OptionSpec<Player> playersSpec;
     protected final OptionSpec<Void> anyMaterialSpec;
     protected final OptionSpec<Void> silentSpec;
-    protected final OptionSpec<Integer> perTeleportSpec;
-    protected final OptionSpec<Integer> ticksPerTeleport;
+    protected final ArgumentAcceptingOptionSpec<Integer> perTeleportSpec;
+    protected final ArgumentAcceptingOptionSpec<Integer> ticksPerTeleport;
 
     public ScatterCommand(Teleporter teleporter, ScatterStyle defaultLogic, Set<Material> materials, int defaultMaxAttempts, int perTeleport, int ticksPer, double minRadius) {
         this.teleporter = teleporter;
@@ -68,53 +70,62 @@ public class ScatterCommand extends OptionCommand {
                 .acceptsAll(ImmutableSet.of("w", "world"), "World to scatter into. If not provideed uses the world you are in")
                 .withRequiredArg()
                 .withValuesConvertedBy(new WorldConverter());
+        completers.put(worldSpawnSpec, WorldTabComplete.INSTANCE);
 
         centreSpec = parser
                 .acceptsAll(ImmutableSet.of("c", "centre"), "Coords of the centre of the scatter. If not provided uses world spawn location")
                 .withRequiredArg()
                 .withValuesSeparatedBy(':')
                 .withValuesConvertedBy(new DoubleConverter().setType("x:z"));
+        completers.put(centreSpec, new FixedValuesTabComplete("0:0"));
 
         minRadiusSpec = parser
                 .acceptsAll(ImmutableSet.of("m", "min", "minradius"), "Minimum radius between players/teams after scatter")
                 .withRequiredArg()
                 .withValuesConvertedBy(new DoubleConverter().setPredicate(DoublePredicates.GREATER_THAN_ZERO_INC).setType("Number >= 0"))
                 .defaultsTo(minRadius);
+        completers.put(minRadiusSpec, new FixedValuesTabComplete(String.valueOf(minRadius)));
 
         radiusSpec = parser
                 .acceptsAll(ImmutableSet.of("r", "radius"), "Radius around the centre coordinate to scatter")
                 .withRequiredArg()
                 .required()
                 .withValuesConvertedBy(new DoubleConverter().setPredicate(DoublePredicates.GREATER_THAN_ZERO_INC).setType("Number >= 0"));
+        completers.put(radiusSpec, new FixedValuesTabComplete("500", "750", "1000", "1500"));
 
         maxAttemptsSpec = parser
                 .acceptsAll(ImmutableSet.of("max", "maxAttempts"), "Maximum attempts to find a location per player")
                 .withRequiredArg()
                 .withValuesConvertedBy(new IntegerConverter().setPredicate(IntegerPredicates.GREATER_THAN_ZERO).setType("Integer > 0"))
                 .defaultsTo(defaultMaxAttempts);
+        completers.put(maxAttemptsSpec, new FixedValuesTabComplete(String.valueOf(defaultMaxAttempts)));
 
         logicSpec = parser
                 .acceptsAll(ImmutableSet.of("s", "style"), "Style of scatter to use")
                 .withRequiredArg()
                 .withValuesConvertedBy(new ScatterStyleConverter())
                 .defaultsTo(defaultLogic);
+        completers.put(logicSpec, new EnumTabComplete(ScatterStyle.class));
 
         avoidSpawnSpec = parser
                 .acceptsAll(ImmutableSet.of("spawn", "avoidSpawn"), "Don't scatter to within this radius around spawn")
                 .withRequiredArg()
                 .withValuesConvertedBy(new DoubleConverter().setPredicate(DoublePredicates.GREATER_THAN_ZERO).setType("Number > 0"));
+        completers.put(avoidSpawnSpec, new FixedValuesTabComplete("50"));
 
         reattemptsSpec = parser
                 .acceptsAll(ImmutableSet.of("reattempts"), "How many times to rerun the command before giving up")
                 .withRequiredArg()
                 .withValuesConvertedBy(new IntegerConverter().setPredicate(IntegerPredicates.GREATER_THAN_ZERO).setType("Integer > 0"))
                 .defaultsTo(1);
+        completers.put(reattemptsSpec, new FixedValuesTabComplete("1"));
 
         anyMaterialSpec = parser
                 .acceptsAll(ImmutableSet.of("a", "allowAllBlocks"), "Allows any blocks to be scattered onto, ignores config settings");
 
         playersSpec = parser.nonOptions("Player/s to scatter, if not provided will scatter all online players")
                 .withValuesConvertedBy(new OnlinePlayerConverter());
+        nonOptionsTabComplete = new NonDuplicateTabComplete(OnlinePlayerTabComplete.INSTANCE);
 
         silentSpec = parser
                 .acceptsAll(ImmutableSet.of("silent"), "Doesn't broadcast scatter to entire server");
@@ -124,12 +135,14 @@ public class ScatterCommand extends OptionCommand {
                 .withRequiredArg()
                 .withValuesConvertedBy(new IntegerConverter().setPredicate(IntegerPredicates.GREATER_THAN_ZERO).setType("Integer > 0"))
                 .defaultsTo(perTeleport);
+        completers.put(perTeleportSpec, new FixedValuesTabComplete(String.valueOf(perTeleport)));
 
         ticksPerTeleport = parser
                 .acceptsAll(ImmutableSet.of("ticks", "ticksPer"), "Amount of ticks between sets of teleports")
                 .withRequiredArg()
                 .withValuesConvertedBy(new IntegerConverter().setPredicate(IntegerPredicates.GREATER_THAN_ZERO).setType("Integer > 0"))
                 .defaultsTo(ticksPer);
+        completers.put(ticksPerTeleport, new FixedValuesTabComplete(String.valueOf(ticksPer)));
     }
 
     @Override
