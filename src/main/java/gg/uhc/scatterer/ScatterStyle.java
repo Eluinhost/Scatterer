@@ -1,8 +1,8 @@
 package gg.uhc.scatterer;
 
-import com.publicuhc.scatterlib.logic.RandomCircleScatterLogic;
-import com.publicuhc.scatterlib.logic.RandomSquareScatterLogic;
-import com.publicuhc.scatterlib.logic.StandardScatterLogic;
+import gg.uhc.scatterlib.logic.RandomCircleScatterLogic;
+import gg.uhc.scatterlib.logic.RandomSquareScatterLogic;
+import gg.uhc.scatterlib.logic.StandardScatterLogic;
 
 import java.util.Random;
 
