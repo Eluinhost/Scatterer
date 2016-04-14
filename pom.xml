@@ -6,7 +6,7 @@
 
     <groupId>gg.uhc</groupId>
     <artifactId>scatterer</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <name>Scatterer</name>
 
     <repositories>
@@ -14,7 +14,25 @@
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
+        <repository>
+            <id>uhcgg-releases</id>
+            <name>uhc.gg-releases</name>
+            <url>http://repo.uhc.gg/libs-release-local</url>
+        </repository>
     </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>uhcgg-releases</id>
+            <name>uhc.gg-releases</name>
+            <url>http://repo.uhc.gg/libs-release-local</url>
+        </repository>
+        <snapshotRepository>
+            <id>uhcgg-snapshots</id>
+            <name>uhc.gg-snapshots</name>
+            <url>http://repo.uhc.gg/libs-snapshot-local</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <dependencies>
         <dependency>
