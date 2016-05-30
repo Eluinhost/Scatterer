@@ -42,6 +42,7 @@ public class Teleporter {
 
     public void teleport(List<Location> locations, List<Scatterable> scatterables, int chunkSize, int ticksPer, Callback callback) {
         Preconditions.checkArgument(locations.size() == scatterables.size());
+        Preconditions.checkArgument(locations.size() > 0);
         Preconditions.checkArgument(chunkSize > 0);
         Preconditions.checkArgument(ticksPer > 0);
         Preconditions.checkNotNull(callback);

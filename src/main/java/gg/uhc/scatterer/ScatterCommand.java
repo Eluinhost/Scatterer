@@ -201,6 +201,12 @@ public class ScatterCommand extends OptionCommand {
         // if none provided scatter all players online
         if (toScatter.size() == 0) {
             toScatter = ImmutableList.copyOf(Bukkit.getOnlinePlayers());
+
+            // if none provided still quit out
+            if (toScatter.size() == 0) {
+                sender.sendMessage(ChatColor.RED + "Canncelled scatter because there was noone to scatter");
+                return true;
+            }
         }
 
         CircularDeadZoneBuilder aroundPlayers = new CircularDeadZoneBuilder(minRadiusSpec.value(options));
